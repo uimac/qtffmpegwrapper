@@ -71,10 +71,10 @@ bool QVideoEncoder::createFile(QString fileName,unsigned width,unsigned height,u
       return false;
    }
 
-   pOutputFormat = ffmpeg::av_guess_format(NULL, fileName.toStdString().c_str(), NULL);
+   pOutputFormat = ffmpeg::av_guess_format(nullptr, fileName.toStdString().c_str(), nullptr);
    if (!pOutputFormat) {
       printf("Could not deduce output format from file extension: using MPEG.\n");
-      pOutputFormat = ffmpeg::av_guess_format("mpeg", NULL, NULL);
+      pOutputFormat = ffmpeg::av_guess_format("mpeg", nullptr, nullptr);
    }
 
    pFormatCtx=ffmpeg::avformat_alloc_context();
@@ -89,7 +89,7 @@ bool QVideoEncoder::createFile(QString fileName,unsigned width,unsigned height,u
 
    // Add the video stream
 
-   pVideoStream = av_new_stream(pFormatCtx,0);
+   pVideoStream = avformat_new_stream(pFormatCtx,0);
    if(!pVideoStream )
    {
       printf("Could not allocate stream\n");
@@ -110,7 +110,8 @@ bool QVideoEncoder::createFile(QString fileName,unsigned width,unsigned height,u
    pCodecCtx->pix_fmt = ffmpeg::PIX_FMT_YUV420P;
 
 
-   avcodec_thread_init(pCodecCtx, 10);
+   //avcodec_thread_init(pCodecCtx, 10);
+   pCodecCtx->thread_count= 10;
 
    //if (c->codec_id == CODEC_ID_MPEG2VIDEO)
    //{
@@ -122,13 +123,7 @@ bool QVideoEncoder::createFile(QString fileName,unsigned width,unsigned height,u
       pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
 
-   if (av_set_parameters(pFormatCtx, NULL) < 0)
-   {
-      printf("Invalid output format parameters\n");
-      return false;
-   }
-
-   ffmpeg::dump_format(pFormatCtx, 0, fileName.toStdString().c_str(), 1);
+   av_dump_format(pFormatCtx, 0, fileName.toStdString().c_str(), 1);
 
    // open_video
    // find the video encoder
@@ -139,7 +134,7 @@ bool QVideoEncoder::createFile(QString fileName,unsigned width,unsigned height,u
       return false;
    }
    // open the codec
-   if (avcodec_open(pCodecCtx, pCodec) < 0)
+   if (avcodec_open2(pCodecCtx, pCodec, nullptr) < 0)
    {
       printf("could not open codec\n");
       return false;
@@ -159,13 +154,13 @@ bool QVideoEncoder::createFile(QString fileName,unsigned width,unsigned height,u
       return false;
    }
 
-   if (url_fopen(&pFormatCtx->pb, fileName.toStdString().c_str(), URL_WRONLY) < 0)
+   if (avio_open(&pFormatCtx->pb, fileName.toStdString().c_str(), AVIO_FLAG_WRITE) < 0)
    {
       printf( "Could not open '%s'\n", fileName.toStdString().c_str());
       return false;
    }
 
-   av_write_header(pFormatCtx);
+   avformat_write_header(pFormatCtx, nullptr);
 
 
 
@@ -193,14 +188,14 @@ bool QVideoEncoder::close()
 
    /* free the streams */
 
-   for(int i = 0; i < pFormatCtx->nb_streams; i++)
+   for(unsigned i = 0; i < pFormatCtx->nb_streams; i++)
    {
       av_freep(&pFormatCtx->streams[i]->codec);
       av_freep(&pFormatCtx->streams[i]);
    }
 
    // Close file
-   url_fclose(pFormatCtx->pb);
+   avio_close(pFormatCtx->pb);
 
    // Free the stream
    av_free(pFormatCtx);
@@ -265,7 +260,6 @@ void QVideoEncoder::initVars()
 **/
 bool QVideoEncoder::initCodec()
 {
-   ffmpeg::avcodec_init();
    ffmpeg::av_register_all();
 
    printf("License: %s\n",ffmpeg::avformat_license());
@@ -523,9 +517,9 @@ bool QVideoEncoder::convertImage_sws(const QImage &img)
       return false;
    }
 
-   img_convert_ctx = ffmpeg::sws_getCachedContext(img_convert_ctx,getWidth(),getHeight(),ffmpeg::PIX_FMT_BGRA,getWidth(),getHeight(),ffmpeg::PIX_FMT_YUV420P,SWS_BICUBIC, NULL, NULL, NULL);
-   //img_convert_ctx = ffmpeg::sws_getCachedContext(img_convert_ctx,getWidth(),getHeight(),ffmpeg::PIX_FMT_BGRA,getWidth(),getHeight(),ffmpeg::PIX_FMT_YUV420P,SWS_FAST_BILINEAR, NULL, NULL, NULL);
-   if (img_convert_ctx == NULL)
+   img_convert_ctx = ffmpeg::sws_getCachedContext(img_convert_ctx,getWidth(),getHeight(),ffmpeg::PIX_FMT_BGRA,getWidth(),getHeight(),ffmpeg::PIX_FMT_YUV420P,SWS_BICUBIC, nullptr, nullptr, nullptr);
+   //img_convert_ctx = ffmpeg::sws_getCachedContext(img_convert_ctx,getWidth(),getHeight(),ffmpeg::PIX_FMT_BGRA,getWidth(),getHeight(),ffmpeg::PIX_FMT_YUV420P,SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
+   if (img_convert_ctx == nullptr)
    {
       printf("Cannot initialize the conversion context\n");
       return false;

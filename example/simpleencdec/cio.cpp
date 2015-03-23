@@ -38,7 +38,7 @@ int ConsoleInit(void)
 	AllocConsole();
  
 	//initial screen buffer so console commands will work	
- 	HANDLE hStdout=CreateConsoleScreenBuffer(GENERIC_WRITE|GENERIC_READ,FILE_SHARE_WRITE, NULL,CONSOLE_TEXTMODE_BUFFER, NULL);
+  HANDLE hStdout=CreateConsoleScreenBuffer(GENERIC_WRITE|GENERIC_READ,FILE_SHARE_WRITE, nullptr,CONSOLE_TEXTMODE_BUFFER, nullptr);
  	
 	//error check
 	if(hStdout==0) 
@@ -85,7 +85,7 @@ int ConsoleInit(void)
 #endif
 
 
-#ifdef LINUX
+#ifdef __linux__
 
 int ConsoleInit(void)
 {

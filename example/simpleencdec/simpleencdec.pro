@@ -3,6 +3,7 @@
 # -------------------------------------------------
 QT       += core gui widgets
 
+CONFIG += c++11
 TARGET = simpleencdec
 TEMPLATE = app
 
@@ -47,7 +48,8 @@ FFMPEG_INCLUDE_PATH = ../../QTFFmpegWrapper
 # ##############################################################################
 # Sources for QT wrapper
 SOURCES += $$QTFFMPEGWRAPPER_SOURCE_PATH/QVideoEncoder.cpp \
-	 $$QTFFMPEGWRAPPER_SOURCE_PATH/QVideoDecoder.cpp
+         $$QTFFMPEGWRAPPER_SOURCE_PATH/QVideoDecoder.cpp \
+
 HEADERS += $$QTFFMPEGWRAPPER_SOURCE_PATH/QVideoEncoder.h \
 	 $$QTFFMPEGWRAPPER_SOURCE_PATH/QVideoDecoder.h
 
