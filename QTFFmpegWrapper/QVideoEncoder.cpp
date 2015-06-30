@@ -250,6 +250,7 @@ void QVideoEncoder::initVars()
    pCodecCtx=0;
    pVideoStream=0;
    pCodec=0;
+   pPacket = new ffmpeg::AVPacket;
    ppicture=0;
    outbuf=0;
    picture_buf=0;
@@ -299,20 +300,20 @@ int QVideoEncoder::encodeImage_p(const QImage &img,bool custompts, unsigned pts)
    if (out_size > 0)
    {
 
-      av_init_packet(&pkt);
+      av_init_packet(pPacket);
 
       //if (pCodecCtx->coded_frame->pts != AV_NOPTS_VALUE)
       if (pCodecCtx->coded_frame->pts != (0x8000000000000000LL))
-         pkt.pts= av_rescale_q(pCodecCtx->coded_frame->pts, pCodecCtx->time_base, pVideoStream->time_base);
+         pPacket->pts= av_rescale_q(pCodecCtx->coded_frame->pts, pCodecCtx->time_base, pVideoStream->time_base);
       if(pCodecCtx->coded_frame->key_frame)
-         pkt.flags |= AV_PKT_FLAG_KEY;
+         pPacket->flags |= AV_PKT_FLAG_KEY;
 
       //printf("c %d. pts %d. codedframepts: %ld pkt.pts: %ld\n",custompts,pts,pCodecCtx->coded_frame->pts,pkt.pts);
 
-      pkt.stream_index= pVideoStream->index;
-      pkt.data= outbuf;
-      pkt.size= out_size;
-      int ret = av_interleaved_write_frame(pFormatCtx, &pkt);
+      pPacket->stream_index= pVideoStream->index;
+      pPacket->data= outbuf;
+      pPacket->size= out_size;
+      int ret = av_interleaved_write_frame(pFormatCtx, pPacket);
       //printf("Wrote %d\n",ret);
       if(ret<0)
          return -1;

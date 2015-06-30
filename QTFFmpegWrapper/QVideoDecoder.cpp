@@ -60,6 +60,7 @@ void QVideoDecoder::InitVars()
    pFormatCtx=0;
    pCodecCtx=0;
    pCodec=0;
+   pPacket = new ffmpeg::AVPacket;
    pFrame=0;
    pFrameRGB=0;
    buffer=0;
@@ -224,17 +225,17 @@ bool QVideoDecoder::decodeSeekFrame(int after)
    while(!done)
    {
       // Read a frame
-      if(av_read_frame(pFormatCtx, &packet)<0)
+      if(av_read_frame(pFormatCtx, pPacket)<0)
          return false;                             // Frame read failed (e.g. end of stream)
 
       //printf("Packet of stream %d, size %d\n",packet.stream_index,packet.size);
 
-      if(packet.stream_index==videoStream)
+      if(pPacket && pPacket->stream_index==videoStream)
       {
          // Is this a packet from the video stream -> decode video frame
 
          int frameFinished;
-         avcodec_decode_video2(pCodecCtx,pFrame,&frameFinished,&packet);
+         avcodec_decode_video2(pCodecCtx,pFrame,&frameFinished,pPacket);
 
          //printf("used %d out of %d bytes\n",len,packet.size);
 
@@ -259,8 +260,8 @@ bool QVideoDecoder::decodeSeekFrame(int after)
          if(frameFinished)
          {
             ffmpeg::AVRational millisecondbase = {1, 1000};
-            int f = packet.dts;
-            int t = ffmpeg::av_rescale_q(packet.dts,pFormatCtx->streams[videoStream]->time_base,millisecondbase);
+            int f = pPacket->dts;
+            int t = ffmpeg::av_rescale_q(pPacket->dts,pFormatCtx->streams[videoStream]->time_base,millisecondbase);
             if(LastFrameOk==false)
             {
                LastFrameOk=true;
@@ -310,7 +311,7 @@ bool QVideoDecoder::decodeSeekFrame(int after)
             } // frame of interest
          }  // frameFinished
       }  // stream_index==videoStream
-      av_free_packet(&packet);      // Free the packet that was allocated by av_read_frame
+      av_free_packet(pPacket);      // Free the packet that was allocated by av_read_frame
    }
    //printf("Returning new frame %d @ %d. LastLastT: %d. LastLastF: %d. LastFrameOk: %d\n",LastFrameNumber,LastFrameTime,LastLastFrameTime,LastLastFrameNumber,(int)LastFrameOk);
    //printf("\n");

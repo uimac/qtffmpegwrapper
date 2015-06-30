@@ -21,7 +21,24 @@ THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS OR IMPL
 #include <QFile>
 #include <QImage>
 
-#include "ffmpeg.h"
+#ifdef _WIN32
+    #ifndef int64_t
+        typedef signed __int64 int64_t;
+    #endif
+    #ifndef uint8_t
+        typedef unsigned __int8 uint8_t;
+    #endif
+#endif
+
+namespace ffmpeg
+{
+    struct AVFormatContext;
+    struct AVCodecContext;
+    struct AVCodec;
+    struct AVFrame;
+    struct AVPacket;
+    struct SwsContext;
+}
 
 class QVideoDecoder
 {
@@ -33,7 +50,7 @@ class QVideoDecoder
       ffmpeg::AVCodec         *pCodec;
       ffmpeg::AVFrame         *pFrame;
       ffmpeg::AVFrame         *pFrameRGB;
-      ffmpeg::AVPacket        packet;
+      ffmpeg::AVPacket        *pPacket;
       ffmpeg::SwsContext      *img_convert_ctx;
       uint8_t                 *buffer;
       int                     numBytes;
