@@ -17,7 +17,9 @@ THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS OR IMPL
 #include "QVideoEncoder.h"
 #include "ffmpeg.h"
 
-
+#ifdef _WIN32
+    #define snprintf    _snprintf
+#endif
 
 /******************************************************************************
 *******************************************************************************

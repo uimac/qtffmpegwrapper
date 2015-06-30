@@ -89,7 +89,7 @@ void QVideoDecoder::close()
 
    // Close the video file
    if(pFormatCtx)
-      av_close_input_file(pFormatCtx);
+      avformat_close_input(&pFormatCtx);
 
    InitVars();
 }
